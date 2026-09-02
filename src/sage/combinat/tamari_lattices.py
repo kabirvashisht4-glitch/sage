@@ -219,7 +219,35 @@ def GeneralizedTamariLattice(a, b, m=1):
     - [PRV2017]_
 
     - [CC2023]_
+
+    TESTS:
+
+    The documented conditions on the parameters are checked::
+
+        sage: GeneralizedTamariLattice(3, 2, -1)
+        Traceback (most recent call last):
+        ...
+        ValueError: the condition m>=0 does not hold
+        sage: GeneralizedTamariLattice(0, -1)
+        Traceback (most recent call last):
+        ...
+        ValueError: the condition b>=0 does not hold
+        sage: GeneralizedTamariLattice(2, 3)
+        Traceback (most recent call last):
+        ...
+        ValueError: the condition a>=b does not hold
+
+    A zero slope is allowed and gives the generalized Dyck lattices::
+
+        sage: GeneralizedTamariLattice(3, 2, 0)
+        Finite lattice containing 2 elements
     """
+    if b < 0:
+        raise ValueError("the condition b>=0 does not hold")
+    if a < b:
+        raise ValueError("the condition a>=b does not hold")
+    if m < 0:
+        raise ValueError("the condition m>=0 does not hold")
     if a < b * m:
         raise ValueError("the condition a>=b*m does not hold")
 
@@ -273,7 +301,22 @@ def TamariLattice(n, m=1):
     REFERENCES:
 
     - [BMFPR2011]_
+
+    TESTS::
+
+        sage: posets.TamariLattice(-1)
+        Traceback (most recent call last):
+        ...
+        ValueError: the condition n>=0 does not hold
+        sage: posets.TamariLattice(3, -1)
+        Traceback (most recent call last):
+        ...
+        ValueError: the condition m>=0 does not hold
     """
+    if n < 0:
+        raise ValueError("the condition n>=0 does not hold")
+    if m < 0:
+        raise ValueError("the condition m>=0 does not hold")
     return GeneralizedTamariLattice(m * n + 1, n, m)
 
 
@@ -382,7 +425,16 @@ def DexterSemilattice(n):
     REFERENCES:
 
     - [Cha18]_
+
+    TESTS::
+
+        sage: posets.DexterSemilattice(-1)
+        Traceback (most recent call last):
+        ...
+        ValueError: the condition n>=0 does not hold
     """
+    if n < 0:
+        raise ValueError("the condition n>=0 does not hold")
     a = n + 1
     b = n
 
