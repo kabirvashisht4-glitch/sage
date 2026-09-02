@@ -312,11 +312,23 @@ def TamariLattice(n, m=1):
         Traceback (most recent call last):
         ...
         ValueError: the condition m>=0 does not hold
+
+    A zero slope only makes sense for `n \leq 1`; larger indices used to
+    return a one-element lattice for every `n`::
+
+        sage: posets.TamariLattice(1, 0)
+        Finite lattice containing 1 elements
+        sage: posets.TamariLattice(3, 0)
+        Traceback (most recent call last):
+        ...
+        ValueError: the condition m*n+1>=n does not hold
     """
     if n < 0:
         raise ValueError("the condition n>=0 does not hold")
     if m < 0:
         raise ValueError("the condition m>=0 does not hold")
+    if m * n + 1 < n:
+        raise ValueError("the condition m*n+1>=n does not hold")
     return GeneralizedTamariLattice(m * n + 1, n, m)
 
 
