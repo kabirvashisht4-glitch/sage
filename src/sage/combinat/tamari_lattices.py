@@ -222,7 +222,7 @@ def GeneralizedTamariLattice(a, b, m=1):
 
     TESTS:
 
-    The documented conditions on the parameters are checked::
+    The documented sign conditions on the parameters are checked::
 
         sage: GeneralizedTamariLattice(3, 2, -1)
         Traceback (most recent call last):
@@ -232,10 +232,6 @@ def GeneralizedTamariLattice(a, b, m=1):
         Traceback (most recent call last):
         ...
         ValueError: the condition b>=0 does not hold
-        sage: GeneralizedTamariLattice(2, 3)
-        Traceback (most recent call last):
-        ...
-        ValueError: the condition a>=b does not hold
 
     A zero slope is allowed and gives the generalized Dyck lattices::
 
@@ -244,8 +240,6 @@ def GeneralizedTamariLattice(a, b, m=1):
     """
     if b < 0:
         raise ValueError("the condition b>=0 does not hold")
-    if a < b:
-        raise ValueError("the condition a>=b does not hold")
     if m < 0:
         raise ValueError("the condition m>=0 does not hold")
     if a < b * m:
@@ -313,22 +307,16 @@ def TamariLattice(n, m=1):
         ...
         ValueError: the condition m>=0 does not hold
 
-    A zero slope only makes sense for `n \leq 1`; larger indices used to
-    return a one-element lattice for every `n`::
+    A zero slope leaves only the vertical path, so the lattice is a
+    singleton for every index::
 
-        sage: posets.TamariLattice(1, 0)
-        Finite lattice containing 1 elements
-        sage: posets.TamariLattice(3, 0)
-        Traceback (most recent call last):
-        ...
-        ValueError: the condition m*n+1>=n does not hold
+        sage: [posets.TamariLattice(n, 0).cardinality() for n in range(5)]
+        [1, 1, 1, 1, 1]
     """
     if n < 0:
         raise ValueError("the condition n>=0 does not hold")
     if m < 0:
         raise ValueError("the condition m>=0 does not hold")
-    if m * n + 1 < n:
-        raise ValueError("the condition m*n+1>=n does not hold")
     return GeneralizedTamariLattice(m * n + 1, n, m)
 
 
