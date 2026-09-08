@@ -1,54 +1,40 @@
-      - name: Set tag
-        # docker/metadata-action@v4 is not used since we need to distinguish
-        # between latest and develop tags
-        id: set_tag
-        run: |
-          set -o pipefail
+name: Build Docker images and push to DockerHub
 
-          # guard commands so the step won't fail the whole job unexpectedly
-          git fetch --depth=1 origin +refs/tags/*:refs/tags/* || true
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/push_to_docker_hub.yml'
+      - 'docker/Dockerfile'
+  workflow_dispatch:
+    # Allow to run manually
+  push:
+    tags:
+      # Match all release tags including beta, rc
+      - '[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.beta[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+.beta[0-9]+'
+      - '[0-9]+.[0-9]+.rc[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+.rc[0-9]+'
 
-          TAG_NAME=$(git tag --sort=creatordate | tail -1 || true)
-          REPO=${{ inputs.dockerhub_repository }}
+  schedule:
+    # Recover failed runs each Tuesday and Thursday at one o'clock
+    - cron: '0 1 * * 2,4'
 
-          # if no tag found, skip the tagging and mark as done
-          if [[ -z "$TAG_NAME" ]]; then
-            echo "JOB_DONE=true" >> $GITHUB_ENV
-            echo "TAG_NAME=" >> $GITHUB_ENV
-            echo "TAG_LIST=" >> $GITHUB_ENV
-            echo "BASE=" >> $GITHUB_ENV
-            df -h || true
-            exit 0
-          fi
+jobs:
+  sagemath-dev:
+    uses: ./.github/workflows/docker_hub.yml
+    with:
+      # Build from scratch
+      dockerhub_repository: sagemath-dev
+      dockerfile_target: make-build
+    secrets: inherit
 
-          # Query Docker Hub for existing tags but guard failures (network, jq missing, rate limits)
-          URL="https://registry.hub.docker.com/v2/repositories/sagemath/$REPO/tags?page_size=32"
-          RESP=$(curl -sL "$URL" || true)
-
-          # try to parse tags with jq but don't fail if jq is missing or JSON is unexpected
-          LATEST_TAGS=$(echo "$RESP" | jq -r '."results"[]["name"]' 2>/dev/null || true)
-
-          JOB_DONE=false
-          if [[ -n "$LATEST_TAGS" ]]; then
-            for i in $LATEST_TAGS; do
-              if [[ "$i" == "$TAG_NAME" || "$i" == "\"$TAG_NAME\"" ]]; then
-                JOB_DONE=true
-                break
-              fi
-            done
-          fi
-
-          # if TAG isn't present, set TAG/TAG_LIST/BASE
-          if [[ $JOB_DONE == 'false' ]]; then
-            TAG="sagemath/$REPO:$TAG_NAME"
-            TAG_LIST="$TAG, sagemath/$REPO:develop"
-            BASE="sagemath/sagemath-dev:$TAG_NAME"
-            echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
-            echo "TAG=$TAG" >> $GITHUB_ENV
-            echo "TAG_LIST=$TAG_LIST" >> $GITHUB_ENV
-            echo "BASE=$BASE" >> $GITHUB_ENV
-          else
-            echo "JOB_DONE=true" >> $GITHUB_ENV
-          fi
-
-          df -h || true
+  sagemath:
+    needs: sagemath-dev
+    uses: ./.github/workflows/docker_hub.yml
+    with:
+      # Build from sagemath-dev
+      dockerhub_repository: sagemath
+      dockerfile_target: sagemath
+    secrets: inherit
