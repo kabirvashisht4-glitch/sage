@@ -1,6 +1,7 @@
 [wrap-git]
 url = https://github.com/flintlib/flint.git
-revision = main
+# v3.4.0; keep in sync with packagefiles/flint
+revision = 2b0788802abf62ec29d8e4a8f917993606e517e0
 depth = 1
 patch_directory = flint
 diff_files = flint/cmakelinux.patch

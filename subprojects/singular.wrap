@@ -1,6 +1,7 @@
 [wrap-git]
 url = https://github.com/Singular/Singular.git
-revision = head
+# Release-4-4-1p5; keep in sync with packagefiles/singular/factory/meson.build
+revision = abc73b69185a2f369e11458d80ef222307adf869
 depth = 1
 patch_directory = singular
 diff_files = singular/include_config.patch
